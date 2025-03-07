@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Kodchasan } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/data/contexts/CartContext";
 
 const kodchasan = Kodchasan({
   weight: "400",
@@ -20,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${kodchasan.className} antialiased`}>{children}</body>
+      <body className={`${kodchasan.className} antialiased`}>
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

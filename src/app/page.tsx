@@ -1,9 +1,15 @@
-const HomePage = () => {
+"use client";
+
+import Header from "@/components/Header";
+import HomePage from "./(store)/home/page";
+
+const RootHome = () => {
   return (
     <>
-      <div>Página Home</div>
+      <Header />
+      <HomePage />
     </>
   );
 };
 
-export default HomePage;
+export default RootHome;
