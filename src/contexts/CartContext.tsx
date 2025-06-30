@@ -1,30 +1,30 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { createContext } from "react";
-import CartItem from "../model/CartItems";
-import Products from "../model/Products";
+import CartItem from "../types/CartItems";
+import Products from "../types/Products";
 import useLocalStorage from "../hooks/useLocalStorage";
 
+// Interface de um item no carrinho de compras
 interface CartContextProps {
   items: CartItem[];
+  quantity: number;
   addItems: (item: Products) => void;
   removeItems: (item: Products) => void;
-  quantity: number;
 }
 
+// Criação do contexto de carrinho de compras
 export const CartContext = createContext<CartContextProps>(
   {} as CartContextProps
 );
 
-interface CartProviderProps {
-  children: ReactNode;
-}
-
-export const CartProvider = (props: CartProviderProps) => {
+// Provedor de carrinho de compras
+export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItem] = useState<CartItem[]>([]);
   const { set, get } = useLocalStorage();
 
+  //
   useEffect(() => {
     const cart = get("cart");
     if (cart) {
@@ -32,6 +32,7 @@ export const CartProvider = (props: CartProviderProps) => {
     }
   }, [get]);
 
+  // Adiciona um item ao carrinho de compras
   const addItems = (product: Products) => {
     const index = items.findIndex((i) => i.product.id === product.id);
     if (index === -1) {
@@ -43,6 +44,7 @@ export const CartProvider = (props: CartProviderProps) => {
     }
   };
 
+  // Remove um item do carrinho de compras
   const removeItems = (product: Products) => {
     const newItems = items
       .map((item) => {
@@ -55,11 +57,13 @@ export const CartProvider = (props: CartProviderProps) => {
     changeItems(newItems);
   };
 
+  // Atualiza os itens do carrinho de compras
   const changeItems = (newItems: CartItem[]) => {
     setItem(newItems);
     set("cart", newItems);
   };
 
+  // Provedor de carrinho de compras com os valores iniciais
   return (
     <CartContext.Provider
       value={{
@@ -71,7 +75,16 @@ export const CartProvider = (props: CartProviderProps) => {
         },
       }}
     >
-      {props.children}
+      {children}
     </CartContext.Provider>
   );
+};
+
+// Hook para acessar o contexto de carrinho de compras
+export const useCartContext = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error("useCart deve ser usado dentro de um CartProvider");
+  }
+  return context;
 };

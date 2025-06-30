@@ -4,10 +4,10 @@ import EmptyCart from "@/components/cart/Empty-Cart";
 import ItemsInCart from "@/components/cart/Items-Cart";
 import TotalCart from "@/components/cart/Cart-Total";
 import Header from "@/components/Header";
-import useContextCart from "@/data/hooks/useContextCart";
+import { useCartContext } from "@/contexts/CartContext";
 
 const CartPage = () => {
-  const { items, addItems, removeItems } = useContextCart();
+  const { items, addItems, removeItems } = useCartContext();
   return (
     <>
       <Header />

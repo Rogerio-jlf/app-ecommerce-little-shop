@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  password         String
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  addresses Address[]
+  carts     Cart[]
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+// id: Identificador único para o usuário.
+// name: Nome do usuário.
+// email: Email único para autenticação.
+// password: Senha criptografada do usuário.
+// role: Papel do usuário, como ADMIN ou USER.
+// orders: Relacionamento com os pedidos do usuário.
+// addresses: Relacionamento com os endereços cadastrados.
+
+// ---------------------------------------------------------------------------
+
+model Product {
+  id          Int   @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  quantity    Int?
+  image       String
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+  payment     Payment?
+  cartItems   CartItem[]
+}
+
+// id: Identificador único para o produto.
+// name: Nome do produto.
+// description: Descrição do produto.
+// price: Preço do produto.
+// quantity: Quantidade disponível em estoque.
+// orderItems: Relacionamento com os itens do pedido.
+
+// ---------------------------------------------------------------------------
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  status      OrderStatus
+  totalAmount Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
+  orderItems  OrderItem[]
+  payment     Payment?
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// id: Identificador único para o pedido.
+// userId: Referência ao usuário que fez o pedido.
+// status: Status do pedido, como PENDING, PAID, SHIPPED, etc.
+// totalAmount: Valor total do pedido.
+// orderItems: Relacionamento com os itens do pedido.
+
+// ---------------------------------------------------------------------------
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+// id: Identificador único para o item do pedido.
+// orderId: Referência ao pedido.
+// productId: Referência ao produto.
+// quantity: Quantidade do produto no pedido.
+// price: Preço do produto no momento do pedido.
+
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id        String    @id @default(cuid())
+  userId    String
+  items     CartItem[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId Int
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+// id: Identificador único para o carrinho.
+// userId: Referência ao usuário do carrinho.
+// items: Relacionamento com os itens do carrinho.
+
+// ---------------------------------------------------------------------------
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// id: Identificador único para o endereço.
+// userId: Referência ao usuário.
+// street, city, state, zipCode, country: Campos de endereço completo.
+
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id          String      @id @default(cuid())
+  orderId     String      @unique
+  paymentDate DateTime    @default(now())
+  amount      Float
+  status      PaymentStatus
+  order       Order       @relation(fields: [orderId], references: [id])
+  product     Product?    @relation(fields: [productId], references: [id])
+  productId   Int?        @unique
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// id: Identificador único para o pagamento.
+// orderId: Referência ao pedido relacionado.
+// paymentDate: Data do pagamento.
+// amount: Valor do pagamento.
+// status: Status do pagamento, como PENDING, COMPLETED, FAILED.
+
+// ---------------------------------------------------------------------------
+
+// Resumo da Estrutura:
+// User: Informações do usuário (usuário e senha).
+// Product: Produtos no catálogo de e-commerce.
+// Order: Pedidos feitos pelos usuários.
+// OrderItem: Itens de cada pedido.
+// Cart: Carrinho de compras temporário.
+// CartItem: Itens do carrinho de compras.
+// Address: Endereços para entrega.
+// Payment: Informações de pagamento e status.
+
+
+// Relacionamentos:
+// Um usuário pode ter vários endereços, pedidos e carrinhos.
+// Um pedido pode ter vários itens de pedido.
+// Um produto pode estar em muitos itens de pedido e carrinhos.
+// Um carrinho pode ter vários itens antes de ser convertido em um pedido.
+
+// ---------------------------------------------------------------------------

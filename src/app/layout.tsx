@@ -1,7 +1,10 @@
+import { AosInit } from "@/components/aos-init";
+import { CartProvider } from "@/contexts/CartContext";
+import { SearchProvider } from "@/contexts/SearchContext";
 import type { Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 import { Kodchasan } from "next/font/google";
-import "./globals.css";
-import { CartProvider } from "@/data/contexts/CartContext";
+import "../styles/globals.css";
 
 const kodchasan = Kodchasan({
   weight: "400",
@@ -22,7 +25,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${kodchasan.className} antialiased`}>
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          <SearchProvider>
+            <SessionProvider>{children}</SessionProvider>
+            <AosInit />
+          </SearchProvider>
+        </CartProvider>
       </body>
     </html>
   );
